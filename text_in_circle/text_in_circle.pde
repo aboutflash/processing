@@ -1,16 +1,21 @@
-String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
-PFont font;
-float r = 300; // radius
-float cw = 30; // circle stroke width 
-float bo = -1; // baseline offset
-float cf = PI*2*r; // circumference
-float sl = cf/characters.length(); // segment length
+final static int ROT13 = 13;
+final String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.!?";
+final float r = 300; // radius
+final float cw = 30; // circle stroke width 
+final float bo = -1; // baseline offset
+final float cf = PI*2*r; // circumference
+final float sl = cf/characters.length(); // segment length
+int posOffset = 0;
 
+PFont cFont;
+PFont iFont;
+char pressedKey;
 
 void setup() {
+  frameRate(12);
   size(800, 800);
-  font = createFont("Courier", 30, true);
-  textFont(font);
+  cFont = createFont("Courier", 30, true);
+  iFont = createFont("Courier", 16, true);
   textAlign(CENTER);
   smooth();
 }
@@ -18,13 +23,18 @@ void setup() {
 void draw() {
   background(255);
   drawCircleBase();
-  
+
   float arc = getAPos();
   for (int i = 0; i < characters.length(); i ++ ) {
     char currentChar = characters.charAt(i);
     arc += sl;
     drawChar(currentChar, arc);
+    drawPos(i, arc);
   }
+}
+
+void keyPressed() {
+  
 }
 
 void drawCircleBase() {
@@ -36,17 +46,32 @@ void drawCircleBase() {
 }
 
 void drawChar(char currentChar, float arc) {
-    float theta = getTheta(arc);
+  textFont(cFont);
+  float theta = getTheta(arc);
+  pushMatrix();
 
-    pushMatrix();
+  translate((r+bo)*cos(theta), (r+bo)*sin(theta)); 
+  rotate(theta + PI/2); 
 
-    translate((r+bo)*cos(theta), (r+bo)*sin(theta)); 
-    rotate(theta + PI/2); 
+  fill(255);
+  text(currentChar, 0, 0);
 
-    fill(255);
-    text(currentChar, 0, 0);
+  popMatrix();
+}
 
-    popMatrix();
+void drawPos(int currentPos, float arc) {
+  textFont(iFont);
+  float theta = getTheta(arc);
+  pushMatrix();
+
+  translate((r-cw)*cos(theta), (r-cw)*sin(theta)); 
+  rotate(theta + PI/2); 
+
+  fill(128);
+  // draws the one-based character position plus an offset for rotation - e.g. ROT13 
+  text(((currentPos + posOffset) % characters.length()) + 1, 0, 0);
+ 
+  popMatrix();
 }
 
 float getAPos() {
